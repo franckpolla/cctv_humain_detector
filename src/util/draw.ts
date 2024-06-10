@@ -14,7 +14,7 @@ export function drawOnCanvas(
     const [x, y, width, height] = bbox;
 
     // Define styling variables for better readability
-    const baseColor = "white";
+    const baseColor = "yellow";
     const highlightColor = "red";
     const textColor = "white";
     const textFont = "12px Courier New";

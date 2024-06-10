@@ -28,11 +28,12 @@ import { ObjectDetection, DetectedObject } from "@tensorflow-models/coco-ssd";
 
 import Loading from "./loading";
 import { drawOnCanvas } from "@/util/draw";
-
+import { Stream } from "stream";
 
 type Props = {};
 
 export default function Home(props: Props) {
+  
   const webcamRef = useRef<Webcam>(null);
   const [mirror, setMirror] = useState<boolean>(false);
   const [recording, setRecording] = useState<boolean>(false);
@@ -41,6 +42,8 @@ export default function Home(props: Props) {
   const [volume, setVolume] = useState<number>(0.8);
   const [model, setModel] = useState<ObjectDetection>();
   const [loading, setLoading] = useState<boolean>(false);
+
+  const mediaRecorder: any = useRef<MediaRecorder>(null);
 
   let interval: any = null;
   const userPromptRecoding = () => {
@@ -85,9 +88,12 @@ export default function Home(props: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   function toggleAutoRecord(
     event: MouseEvent<HTMLButtonElement, MouseEvent>
-  ): void {
-    throw new Error("Function not implemented.");
+  ): void {} {
+  
   }
+
+
+
   useEffect(() => {
     try {
       setLoading(true);
@@ -116,7 +122,35 @@ export default function Home(props: Props) {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [webcamRef.current, model]);
+  }, [webcamRef.current, model, mirror]);
+
+  useEffect(() => {
+    if (webcamRef && webcamRef.current) {
+      const stream = (webcamRef.current.video as any).captureStream();
+
+      if (stream) {
+        mediaRecorder.current = new MediaRecorder(stream);
+        mediaRecorder.current.ondataavailable = (e: any) => {
+          if (e.data.size > 0) {
+            const recordBlob = new Blob([e.data], { type: "video" });
+            const videobUrl = URL.createObjectURL(recordBlob);
+            const a = document.createElement("a");
+            a.href = videobUrl;
+            a.download =`${handleDownload}`;
+            a.click();
+          }
+        };
+        mediaRecorder.current.onstart = (e: any) => {
+          setRecording( true);
+        };
+        mediaRecorder.current.onstop = (e: any) => {
+          setRecording(false);
+        };
+        
+      }
+    }
+  }, [webcamRef]);
+
 
   async function runPrediction() {
     if (
@@ -125,11 +159,33 @@ export default function Home(props: Props) {
       webcamRef.current.video &&
       webcamRef.current.video.readyState === 4
     ) {
-      const predictions:DetectedObject = await model.detect(webcamRef.current.video);
-    resizeCanvas(canvasRef,webcamRef)
-    drawOnCanvas(mirror,predictions, canvasRef.current?.getContext("2d"))
+      const predictions: DetectedObject = await model.detect(
+        webcamRef.current.video
+      );
+      resizeCanvas(canvasRef, webcamRef);
+      drawOnCanvas(mirror, predictions, canvasRef.current?.getContext("2d"));
     }
   }
+
+ // when downloading the video
+ const handleDownload = () => {
+
+    // Get the current timestamp
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    // Call the function to send information (timestamp and video name)
+    return ( formattedDate); // Adjust video name if needed
+  }
+
+ 
 
   return (
     <>
@@ -140,10 +196,10 @@ export default function Home(props: Props) {
         </div>
       ) : (
         <div>
-          <main className="flex p-4 w-full">
+          <main className="flex p-10 w-full">
             {/* left division of the webcam and canvas*/}
             <div className="relative w-full ">
-              <div className="relative h-screen w-full">
+              <div className="relative h-screen w-full justify-center items-center">
                 <Webcam
                   ref={webcamRef}
                   mirrored={mirror} // display horizontally where (right or left ) you are looking
@@ -151,13 +207,13 @@ export default function Home(props: Props) {
                 />
                 <canvas
                   ref={canvasRef}
-                  className="top-0 left-0 h-full w-full absolute"
+                  className="top-0 left-0 h-full w-full absolute "
                 />{" "}
                 {/*The <canvas> element is an HTML element used for rendering graphics, animations, games, data visualizations, and other interactive content on a web page. It provides a drawable area that can be manipulated using JavaScript and various APIs like the CanvasRenderingContext2D or WebGL.*/}
               </div>
             </div>
             {/* the right division of the webcam */}
-            <div>
+            <div className="p-4">
               <div className="flex flex-row flex-1">
                 <div className="border-primary/5 border-2  items-center  rounded max-w-xs flex flex-col w-auto text-center gap-2 justify-between shadow">
                   {/* top section */}
@@ -342,12 +398,14 @@ export default function Home(props: Props) {
     </>
   );
 }
-function resizeCanvas(canvasRef: React.RefObject<HTMLCanvasElement>, webcamRef: React.RefObject<Webcam>) {
-  const canvas= canvasRef.current;
-  const video =webcamRef.current?.video
+function resizeCanvas(
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  webcamRef: React.RefObject<Webcam>
+) {
+  const canvas = canvasRef.current;
+  const video = webcamRef.current?.video;
   if (canvas && video) {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
   }
 }
-
