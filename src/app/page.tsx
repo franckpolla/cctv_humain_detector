@@ -196,7 +196,7 @@ export default function Home(props: Props) {
         </div>
       ) : (
         <div>
-          <main className="flex p-10 w-full">
+          <main className="flex flex-col justify-center items-center md:p-10 w-full lg:flex-row ">
             {/* left division of the webcam and canvas*/}
             <div className="relative w-full ">
               <div className="relative h-screen w-full justify-center items-center">
@@ -213,7 +213,7 @@ export default function Home(props: Props) {
               </div>
             </div>
             {/* the right division of the webcam */}
-            <div className="p-4">
+            <div className="p-4  ">
               <div className="flex flex-row flex-1">
                 <div className="border-primary/5 border-2  items-center  rounded max-w-xs flex flex-col w-auto text-center gap-2 justify-between shadow">
                   {/* top section */}
