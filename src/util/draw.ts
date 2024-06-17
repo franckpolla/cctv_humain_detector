@@ -1,5 +1,7 @@
 import { DetectedObject } from "@tensorflow-models/coco-ssd";
 
+
+// this function is drawing the square on the onbject that it detects
 export function drawOnCanvas(
   mirror: boolean,
   predictions: DetectedObject[],
