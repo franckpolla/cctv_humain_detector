@@ -1,3 +1,9 @@
+ // code description
+ /*
+The HomePage function is a React component that integrates a webcam feed with object detection using the COCO-SSD model. It provides functionalities such as mirroring the webcam feed, taking screenshots, recording videos, and toggling between different themes. The component also includes a volume slider for notification sounds and an auto-record feature that starts recording when a person is detected in the webcam feed.
+
+*/
+
 "use client";
 import { ModeToggle } from "@/components/toggle";
 import { Button } from "@/components/ui/button";
@@ -46,7 +52,7 @@ const formattedDate = currentDate.toLocaleDateString("en-US", {
   minute: "2-digit",
 });
 
-const HomePage = (props: Props) => {
+ const HomePage = (props: Props) => {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
